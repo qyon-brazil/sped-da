@@ -50,6 +50,7 @@ class Daevento extends DaCommon
     protected $cStat;
     protected $xMotivo;
     protected $xJust;
+    protected $xObs;
     protected $CNPJDest = '';
     protected $CPFDest = '';
     protected $dhRegEvento;
@@ -78,13 +79,7 @@ class Daevento extends DaCommon
         $this->evento = $this->dom->getElementsByTagName("eventoCTe")->item(0);
         $this->infEvento = $this->evento->getElementsByTagName("infEvento")->item(0);
         $this->retEvento = $this->dom->getElementsByTagName("retEventoCTe")->item(0);
-        $this->rinfEvento = $this->retEvento->getElementsByTagName("infEvento")->item(0);
         $this->tpEvento = $this->infEvento->getElementsByTagName("tpEvento")->item(0)->nodeValue;
-        if (!in_array($this->tpEvento, array('110110', '110111'))) {
-            $this->errMsg = 'Evento não implementado ' . $this->tpEvento . ' !!';
-            $this->errStatus = true;
-            return false;
-        }
         $this->id = str_replace('ID', '', $this->infEvento->getAttribute("Id"));
         $this->chCTe = $this->infEvento->getElementsByTagName("chCTe")->item(0)->nodeValue;
         $this->dadosEmitente['CNPJ'] = substr($this->chCTe, 6, 14);
@@ -95,15 +90,20 @@ class Daevento extends DaCommon
         $this->xCondUso = (empty($this->xCondUso) ? '' : $this->xCondUso->nodeValue);
         $this->xJust = $this->infEvento->getElementsByTagName("xJust")->item(0);
         $this->xJust = (empty($this->xJust) ? '' : $this->xJust->nodeValue);
+        $this->xObs = $this->infEvento->getElementsByTagName("xObs")->item(0);
+        $this->xObs = (empty($this->xObs) ? '' : $this->xObs->nodeValue);
         $this->dhEvento = $this->infEvento->getElementsByTagName("dhEvento")->item(0)->nodeValue;
-        $this->cStat = $this->rinfEvento->getElementsByTagName("cStat")->item(0)->nodeValue;
-        $this->xMotivo = $this->rinfEvento->getElementsByTagName("xMotivo")->item(0)->nodeValue;
-        $this->CNPJDest = !empty($this->rinfEvento->getElementsByTagName("CNPJDest")->item(0)->nodeValue) ?
-            $this->rinfEvento->getElementsByTagName("CNPJDest")->item(0)->nodeValue : '';
-        $this->CPFDest = !empty($this->rinfEvento->getElementsByTagName("CPFDest")->item(0)->nodeValue) ?
-            $this->rinfEvento->getElementsByTagName("CPFDest")->item(0)->nodeValue : '';
-        $this->dhRegEvento = $this->rinfEvento->getElementsByTagName("dhRegEvento")->item(0)->nodeValue;
-        $this->nProt = $this->rinfEvento->getElementsByTagName("nProt")->item(0)->nodeValue;
+        if (!empty($this->retEvento)) {
+            $this->rinfEvento = $this->retEvento->getElementsByTagName("infEvento")->item(0);
+            $this->cStat = $this->rinfEvento->getElementsByTagName("cStat")->item(0)->nodeValue;
+            $this->xMotivo = $this->rinfEvento->getElementsByTagName("xMotivo")->item(0)->nodeValue;
+            $this->CNPJDest = !empty($this->rinfEvento->getElementsByTagName("CNPJDest")->item(0)->nodeValue) ?
+                $this->rinfEvento->getElementsByTagName("CNPJDest")->item(0)->nodeValue : '';
+            $this->CPFDest = !empty($this->rinfEvento->getElementsByTagName("CPFDest")->item(0)->nodeValue) ?
+                $this->rinfEvento->getElementsByTagName("CPFDest")->item(0)->nodeValue : '';
+            $this->dhRegEvento = $this->rinfEvento->getElementsByTagName("dhRegEvento")->item(0)->nodeValue;
+            $this->nProt = $this->rinfEvento->getElementsByTagName("nProt")->item(0)->nodeValue;
+        }
     }
 
 
@@ -196,7 +196,7 @@ class Daevento extends DaCommon
         $maxW = $this->wPrint;
         //####################################################################################
         //coluna esquerda identificação do emitente
-        $w = round($maxW * 0.41, 0);// 80;
+        $w = round($maxW * 0.41, 0); // 80;
         if ($this->orientacao == 'P') {
             $aFont = array('font' => $this->fontePadrao, 'size' => 6, 'style' => 'I');
         } else {
@@ -304,8 +304,10 @@ class Daevento extends DaCommon
         $aFont = array('font' => $this->fontePadrao, 'size' => 12, 'style' => 'I');
         if ($this->tpEvento == '110110') {
             $texto = '(Carta de Correção Eletrônica)';
-        } elseif ($this->tpEvento == '110111') {
+        } else if ($this->tpEvento == '110111') {
             $texto = '(Cancelamento de CTe)';
+        } else if ($this->tpEvento == '610110') {
+            $texto = '(Prestacao do Servico em Desacordo)';
         }
         $this->pdf->textBox($x, $y + 7, $w2, 8, $texto, $aFont, 'T', 'C', 0, '');
         $texto = 'ID do Evento: ' . $this->id;
@@ -327,11 +329,18 @@ class Daevento extends DaCommon
                 . 'contêm irregularidades que estão destacadas e suas respectivas '
                 . 'correções, solicitamos que sejam aplicadas essas correções ao '
                 . 'executar seus lançamentos fiscais.';
-        } elseif ($this->tpEvento == '110111') {
+        } else if ($this->tpEvento == '110111') {
             $texto = 'De acordo com as determinações legais vigentes, vimos por meio '
-                . 'desta comunicar-lhe que o  Conhecimento de Transporte, abaixo referenciado, está '
+                . 'desta comunicar-lhe que o Conhecimento de Transporte, abaixo referenciado, está '
                 . 'cancelado, solicitamos que sejam aplicadas essas correções ao '
                 . 'executar seus lançamentos fiscais.';
+        } else {
+            if ($this->tpEvento == '610110') {
+                $texto = 'Prestacao do Servico em Desacordo';
+            }
+            $texto = 'De acordo com as determinações legais vigentes, '
+                . 'vimos por meio desta comunicar-lhe que o Conhecimento de Transporte, '
+                . 'abaixo referenciada, tem o evento ' . $texto . ' vinculado a CTe.';
         }
         $aFont = array('font' => $this->fontePadrao, 'size' => 10, 'style' => '');
         $this->pdf->textBox($x + 5, $y1, $maxW - 5, 20, $texto, $aFont, 'T', 'L', 0, '', false);
@@ -396,8 +405,10 @@ class Daevento extends DaCommon
         $maxW = $this->wPrint;
         if ($this->tpEvento == '110110') {
             $texto = 'CORREÇÕES A SEREM CONSIDERADAS';
-        } else {
+        } else if ($this->tpEvento == '110111') {
             $texto = 'JUSTIFICATIVA DO CANCELAMENTO';
+        } else {
+            $texto = 'DESCRIÇÃO DO EVENTO';
         }
         $aFont = array('font' => $this->fontePadrao, 'size' => 10, 'style' => 'B');
         $this->pdf->textBox($x, $y, $maxW, 5, $texto, $aFont, 'T', 'L', 0, '', false);
@@ -420,7 +431,7 @@ class Daevento extends DaCommon
                 $campo = $this->infCorrecao->item($i)->getElementsByTagName('campoAlterado')->item(0)->nodeValue;
                 $numero = 1;
                 if (!empty($this->infCorrecao->item($i)->getElementsByTagName('nroItemAlterado')->item(0))) {
-                    $numero =$this->infCorrecao->item($i)->getElementsByTagName('nroItemAlterado')->item(0)->nodeValue;
+                    $numero = $this->infCorrecao->item($i)->getElementsByTagName('nroItemAlterado')->item(0)->nodeValue;
                 }
                 $valor = $this->infCorrecao->item($i)->getElementsByTagName('valorAlterado')->item(0)->nodeValue;
 
@@ -430,8 +441,8 @@ class Daevento extends DaCommon
                 $this->pdf->textBox($x = ($maxW * 2), $y, $maxW, 5, $numero, $aFont, 'T', 'C', 0, '', false);
                 $this->pdf->textBox($x = ($maxW * 3), $y, ($this->wPrint - $x), 5, $valor, $aFont, 'T', 'C', 0);
             }
-        } elseif ($this->tpEvento == '110111') {
-            $texto = $this->xJust;
+        } else {
+            $texto = $this->xJust ?: $this->xObs ?: '';
             $aFont = array('font' => $this->fontePadrao, 'size' => 12, 'style' => 'B');
             $this->pdf->textBox($x + 2, $y + 2, $maxW - 2, 150, $texto, $aFont, 'T', 'L', 0, '', false);
         }
@@ -450,7 +461,7 @@ class Daevento extends DaCommon
                 . "impresso apenas para sua informação e não possue validade fiscal."
                 . "\n A CCe deve ser recebida e mantida em arquivo eletrônico XML e "
                 . "pode ser consultada através dos Portais das SEFAZ.";
-        } elseif ($this->tpEvento == '110111') {
+        } else {
             $texto = "Este documento é uma representação gráfica do evento de CTe e foi "
                 . "impresso apenas para sua informação e não possue validade fiscal."
                 . "\n O Evento deve ser recebido e mantido em arquivo eletrônico XML e "
