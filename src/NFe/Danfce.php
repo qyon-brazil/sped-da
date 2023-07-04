@@ -246,7 +246,10 @@ class Danfce extends DaCommon
 
         $y = $this->blocoVI($y); //informações sobre consulta pela chave
         $y = $this->blocoVII($y); //informações sobre o consumidor e dados da NFCe
-        $y = $this->blocoVIII($y); //QRCODE
+        try {
+            $y = $this->blocoVIII($y); //QRCODE
+        } catch (\Error $ex) {
+        }
         $y = $this->blocoIX($y); //informações complementares e sobre tributos
         $y = $this->blocoX($y); //creditos
 

@@ -893,10 +893,13 @@ class Dacte extends DaCommon
         $aFont = $this->formatNegrito;
         $this->pdf->textBox($x, $y + 12, $wa, $h, $texto, $aFont, 'T', 'C', 0, '');
         if ($this->qrCodCTe !== null) {
-            $this->qrCodeDacte($y - 27);
-            $w = 45;
-            $x += 92.5;
-            $this->pdf->textBox($x, $y - 34, $w + 0.5, $h + 41.5);
+            try {
+                $this->qrCodeDacte($y - 27);
+                $w = 45;
+                $x += 92.5;
+                $this->pdf->textBox($x, $y - 34, $w + 0.5, $h + 41.5);
+            } catch (\Error $ex) {
+            }
         }
         //CFOP
         $x = $oldX;
