@@ -78,19 +78,12 @@ class Daevento extends DaCommon
         $this->retEvento = $this->dom->getElementsByTagName("retEventoMDFe")->item(0);
         $this->rinfEvento = $this->retEvento->getElementsByTagName("infEvento")->item(0);
         $this->tpEvento = $this->infEvento->getElementsByTagName("tpEvento")->item(0)->nodeValue;
-        if (!in_array($this->tpEvento, ['110114'])) {
-            $this->errMsg = 'Evento não implementado ' . $this->tpEvento . ' !!';
-            $this->errStatus = true;
-            return false;
-        }
         $this->id = str_replace('ID', '', $this->infEvento->getAttribute("Id"));
         $this->chMDFe = $this->infEvento->getElementsByTagName("chMDFe")->item(0)->nodeValue;
         $this->dadosEmitente['CNPJ'] = substr($this->chMDFe, 6, 14);
         $this->tpAmb = $this->infEvento->getElementsByTagName("tpAmb")->item(0)->nodeValue;
         $this->cOrgao = $this->infEvento->getElementsByTagName("cOrgao")->item(0)->nodeValue;
-        if ($this->tpEvento == '110114') {
-            $this->detEvento = $this->infEvento->getElementsByTagName("detEvento");
-        }
+        $this->detEvento = $this->infEvento->getElementsByTagName("detEvento");
         $this->xJust = $this->infEvento->getElementsByTagName("xJust")->item(0);
         $this->xJust = (empty($this->xJust) ? '' : $this->xJust->nodeValue);
         $this->dhEvento = $this->infEvento->getElementsByTagName("dhEvento")->item(0)->nodeValue;
@@ -188,7 +181,7 @@ class Daevento extends DaCommon
         $maxW = $this->wPrint;
         //####################################################################################
         //coluna esquerda identificação do emitente
-        $w = round($maxW * 0.41, 0);// 80;
+        $w = round($maxW * 0.41, 0); // 80;
         if ($this->orientacao == 'P') {
             $aFont = array('font' => $this->fontePadrao, 'size' => 6, 'style' => 'I');
         } else {
@@ -287,27 +280,30 @@ class Daevento extends DaCommon
         $this->pdf->textBox($x, $y, $w2, $h);
         $y1 = $y + $h;
         $aFont = array('font' => $this->fontePadrao, 'size' => 16, 'style' => 'B');
-        if ($this->tpEvento == '110114') {
-            $texto = 'Representação Gráfica de Inclusão de Condutor';
-        } else {
-            $texto = 'Representação Gráfica de Evento';
-        }
+        $texto = 'Representação Gráfica de Evento';
         $this->pdf->textBox($x, $y + 2, $w2, 8, $texto, $aFont, 'T', 'C', 0, '');
         $aFont = array('font' => $this->fontePadrao, 'size' => 12, 'style' => 'I');
-        if ($this->tpEvento == '110114') {
-            $texto = '(Inclusão de Condutor)';
+        $texto = '';
+        if ($this->tpEvento == '110110') {
+            $texto = '(Carta de Correção Eletrônica)';
         } elseif ($this->tpEvento == '110111') {
             $texto = '(Cancelamento de MDFe)';
+        } elseif ($this->tpEvento == '110112') {
+            $texto = '(Encerramento de MDFe)';
+        } elseif ($this->tpEvento == '110114') {
+            $texto = '(Inclusão de Condutor)';
+        } elseif ($this->tpEvento == '110115') {
+            $texto = '(Inclusão de DF-e)';
         }
-        $this->pdf->textBox($x, $y + 7, $w2, 8, $texto, $aFont, 'T', 'C', 0, '');
+        $this->pdf->textBox($x, $y + 9, $w2, 8, $texto, $aFont, 'T', 'C', 0, '');
         $texto = 'ID do Evento: ' . $this->id;
         $aFont = array('font' => $this->fontePadrao, 'size' => 10, 'style' => '');
         $this->pdf->textBox($x, $y + 15, $w2, 8, $texto, $aFont, 'T', 'L', 0, '');
         $tsHora = $this->toTimestamp($this->dhEvento);
-        $texto = 'Criado em : ' . date('d/m/Y   H:i:s', $tsHora);
+        $texto = 'Criado em : ' . date('d/m/Y H:i:s', $tsHora);
         $this->pdf->textBox($x, $y + 20, $w2, 8, $texto, $aFont, 'T', 'L', 0, '');
         $tsHora = $this->toTimestamp($this->dhRegEvento);
-        $texto = 'Prococolo: ' . $this->nProt . '  -  Registrado na SEFAZ em: ' . date('d/m/Y   H:i:s', $tsHora);
+        $texto = 'Prococolo: ' . $this->nProt . ' - Registrado na SEFAZ em: ' . date('d/m/Y H:i:s', $tsHora);
         $this->pdf->textBox($x, $y + 25, $w2, 8, $texto, $aFont, 'T', 'L', 0, '');
         //####################################################
         $x = $oldX;
@@ -364,16 +360,35 @@ class Daevento extends DaCommon
     private function body($x, $y)
     {
         $maxW = $this->wPrint;
-        if ($this->tpEvento == '110114') {
-            $texto = 'CONDUTOR';
-        } else {
+        $texto = 'JUSTIFICATIVA DO EVENTO';
+        if ($this->tpEvento == '110110') {
+            $texto = 'CORREÇÕES A SEREM CONSIDERADAS';
+        } elseif ($this->tpEvento == '110111') {
             $texto = 'JUSTIFICATIVA DO CANCELAMENTO';
+        } elseif ($this->tpEvento == '110112') {
+            $texto = 'ENCERRAMENTO';
+        } elseif ($this->tpEvento == '110114') {
+            $texto = 'CONDUTOR';
+        } elseif ($this->tpEvento == '110115') {
+            $texto = 'INCLUSÃO DE DF-e';
         }
         $aFont = array('font' => $this->fontePadrao, 'size' => 10, 'style' => 'B');
         $this->pdf->textBox($x, $y, $maxW, 5, $texto, $aFont, 'T', 'L', 0, '', false);
         $y += 5;
         $this->pdf->textBox($x, $y, $maxW, 190);
-        if ($this->tpEvento == '110114') {
+        if ($this->tpEvento == '110112') {
+            $maxW = ($maxW / 3);
+            $aFont = array('font' => $this->fontePadrao, 'size' => 12, 'style' => 'B');
+            $texto = 'Encerramento de MDFe';
+            $this->pdf->textBox($x, $y, $maxW, 5, $texto, $aFont, 'T', 'L', 0, '', false);
+
+            $y = ($y + 6);
+            $aFont = array('font' => $this->fontePadrao, 'size' => 9, 'style' => '');
+            $cUF = $this->detEvento->item(0)->getElementsByTagName('cUF')->item(0)->nodeValue;
+            $cMun = $this->detEvento->item(0)->getElementsByTagName('cMun')->item(0)->nodeValue;
+            $texto = 'cUF: ' . $cUF . ' - cMun: ' . $cMun;
+            $this->pdf->textBox($x, $y, $maxW, 5, $texto, $aFont, 'T', 'L', 0, '', false);
+        } elseif ($this->tpEvento == '110114') {
             $maxW = ($maxW / 3);
             $this->pdf->textBox($x, $y, $maxW, 5, "CPF", $aFont, 'T', 'L', 0, '', false);
             $this->pdf->textBox($maxW, $y, $maxW, 5, "Nome", $aFont, 'T', 'L', 0, '', false);
@@ -386,7 +401,14 @@ class Daevento extends DaCommon
 
             $this->pdf->textBox($x, $y, $maxW, 5, $campo, $aFont, 'T', 'L', 0, '', false);
             $this->pdf->textBox($maxW, $y, $maxW, 5, $grupo, $aFont, 'T', 'L', 0, '', false);
-        } elseif ($this->tpEvento == '110111') {
+        } elseif ($this->tpEvento == '110115') {
+            $cMunCarrega = $this->detEvento->item(0)->getElementsByTagName('cMunCarrega')->item(0)->nodeValue;
+            $xMunCarrega = $this->detEvento->item(0)->getElementsByTagName('xMunCarrega')->item(0)->nodeValue;
+
+            $texto = $cMunCarrega . ' - ' . $xMunCarrega;
+            $aFont = array('font' => $this->fontePadrao, 'size' => 12, 'style' => 'B');
+            $this->pdf->textBox($x + 2, $y + 2, $maxW - 2, 150, $texto, $aFont, 'T', 'L', 0, '', false);
+        } else {
             $texto = $this->xJust;
             $aFont = array('font' => $this->fontePadrao, 'size' => 12, 'style' => 'B');
             $this->pdf->textBox($x + 2, $y + 2, $maxW - 2, 150, $texto, $aFont, 'T', 'L', 0, '', false);
@@ -402,17 +424,10 @@ class Daevento extends DaCommon
     {
         $w = $this->wPrint;
         $texto = '';
-        if ($this->tpEvento == '110114') {
-            $texto = "Este documento é uma representação gráfica da incusão de condutor e foi "
-                . "impresso apenas para sua informação e não possue validade fiscal."
-                . "\n A inclusão deve ser recebida e mantida em arquivo eletrônico XML e "
-                . "pode ser consultada através dos Portais das SEFAZ.";
-        } elseif ($this->tpEvento == '110111') {
-            $texto = "Este documento é uma representação gráfica do evento de MDFe e foi "
-                . "impresso apenas para sua informação e não possue validade fiscal."
-                . "\n O Evento deve ser recebido e mantido em arquivo eletrônico XML e "
-                . "pode ser consultada através dos Portais das SEFAZ.";
-        }
+        $texto = "Este documento é uma representação gráfica do evento de MDFe e foi "
+            . "impresso apenas para sua informação e não possue validade fiscal."
+            . "\n O Evento deve ser recebido e mantido em arquivo eletrônico XML e "
+            . "pode ser consultada através dos Portais das SEFAZ.";
         $aFont = array('font' => $this->fontePadrao, 'size' => 10, 'style' => 'I');
         $this->pdf->textBox($x, $y, $w, 20, $texto, $aFont, 'T', 'C', 0, '', false);
         $y = $this->hPrint - 4;
