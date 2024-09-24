@@ -1,6 +1,7 @@
 <?php
 
 namespace NFePHP\DA\CTe;
+date_default_timezone_set('America/Sao_Paulo');
 
 /**
  * Classe para ageração do PDF da CTe, conforme regras e estruturas

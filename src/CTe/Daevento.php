@@ -1,6 +1,7 @@
 <?php
 
 namespace NFePHP\DA\CTe;
+date_default_timezone_set('America/Sao_Paulo');
 
 /**
  * Classe para geração do envento do CTe em PDF
