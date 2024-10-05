@@ -48,6 +48,7 @@ class DacteOS extends DaCommon
     protected $veic;
     protected $ferrov;
     protected $Comp;
+    protected $ObsFisco;
     protected $infNF;
     protected $infNFe;
     protected $compl;
@@ -77,6 +78,18 @@ class DacteOS extends DaCommon
     protected $lota;
     protected $formatoChave = "#### #### #### #### #### #### #### #### #### #### ####";
     protected $margemInterna = 0;
+
+    protected $infOutros;
+    protected $ICMSSN;
+    protected $toma;
+    protected $enderToma;
+    protected $xSeg;
+    protected $nApol;
+    protected $respSeg;
+    protected $protCTe;
+    protected $qrCodMDFe;
+    protected $cteProc;
+    protected $wCanhoto;
 
     /**
      * __construct
@@ -119,6 +132,7 @@ class DacteOS extends DaCommon
             $this->chaveCTeRef = $this->getTagValue($this->infCteComp, "chave");
             $this->vPrest = $this->dom->getElementsByTagName("vPrest")->item(0);
             $this->Comp = $this->dom->getElementsByTagName("Comp");
+            $this->ObsFisco = $this->dom->getElementsByTagName("ObsFisco");
             $this->infNF = $this->dom->getElementsByTagName("infNF");
             $this->infNFe = $this->dom->getElementsByTagName("infNFe");
             $this->infOutros = $this->dom->getElementsByTagName("infOutros");
@@ -133,8 +147,12 @@ class DacteOS extends DaCommon
                 $vTrib = 0;
             }
             $textoAdic = number_format($vTrib, 2, ",", ".");
+            $textoObsFisco = "";
+            foreach($this->ObsFisco as $obsFisco){                
+                $textoObsFisco .= $this->getTagValue($obsFisco, "xTexto").". ";
+            }
             $this->textoAdic = "o valor aproximado de tributos incidentes sobre o preço deste serviço é de R$"
-                .$textoAdic;
+                .$textoAdic.'. '.$textoObsFisco;
             $this->toma = $this->dom->getElementsByTagName("toma")->item(0);
             $this->enderToma = $this->getTagValue($this->toma, "enderToma");
             //modal aquaviário
