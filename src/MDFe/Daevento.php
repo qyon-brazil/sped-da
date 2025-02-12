@@ -1,6 +1,7 @@
 <?php
 
 namespace NFePHP\DA\MDFe;
+date_default_timezone_set('America/Sao_Paulo');
 
 /**
  * Classe para geração do envento do MDFe em PDF
