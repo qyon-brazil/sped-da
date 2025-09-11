@@ -15,9 +15,9 @@ trait TraitBlocoIV
         //$this->pdf->textBox($this->margem, $y, $this->wPrint, $this->bloco4H, '', $aFont, 'T', 'C', true, '', false);
 
         $qtd = $this->det->length;
-        $valor = $this->getTagValue($this->total, 'vProd') ?: 0;
+        $valor = $this->getTagValue($this->total, 'vCFe') ?: 0;
         $desconto = $this->getTagValue($this->total, 'vDesc') ?: 0;
-        $bruto = $this->getTagValue($this->total, 'vCFe') ?: 0;
+        $bruto = $this->getTagValue($this->total, 'vProd') ?: 0;
 
         $aFont = ['font' => $this->fontePadrao, 'size' => 8, 'style' => ''];
         $texto = "Qtde total de itens";
